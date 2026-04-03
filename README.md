@@ -10,7 +10,7 @@ A production-ready, cloud-first API for multilingual translation and abstractive
 ### What is a Transformer?
 A neural network architecture that relies entirely on Self-Attention mechanisms to model global dependencies between tokens. Unlike recurrent models, Transformers process entire sequences in parallel — dramatically increasing throughput and contextual depth.
 
-![Transformer Architecture](assets/transformer_architecture.png)
+<img width="1195" height="869" alt="Image" src="https://github.com/user-attachments/assets/0aee4b9c-a503-450e-a411-b4123856b8c5" />
 
 ### Self-Attention
 The mechanism that allows every token in a sequence to attend to every other token simultaneously. Attention scores are computed as scaled dot-products of Query, Key, and Value projections, capturing rich linguistic relationships regardless of distance in the sequence.
