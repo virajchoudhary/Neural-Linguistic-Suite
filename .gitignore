@@ -1,0 +1,64 @@
+# ── Secrets ───────────────────────────────────────────────────────────────────
+.env
+*.env
+.env.*
+!.env.example
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+*.whl
+
+# ── Virtual environments ───────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── PyTorch / ML artefacts ────────────────────────────────────────────────────
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.bin
+*.h5
+
+# ── HuggingFace cache ─────────────────────────────────────────────────────────
+.cache/
+huggingface/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+*.ipynb
+.ipynb_checkpoints/
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+vite.log
+
+# ── OS artefacts ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Local launcher scripts (contain machine-specific paths) ───────────────────
+run_project.bat
+start_*.bat
