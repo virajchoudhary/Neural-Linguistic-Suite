@@ -51,7 +51,7 @@ class SummarizeRequest(BaseModel):
 # ── HuggingFace Inference helper ──────────────────────────────────────────────
 
 
-def _hf_post(model_id: str, payload: dict):
+def query_hf_api(model_id: str, payload: dict):
     if not HF_TOKEN:
         raise HTTPException(status_code=500, detail="Inference API key not configured.")
 
@@ -69,7 +69,10 @@ def _hf_post(model_id: str, payload: dict):
             status_code=502, detail="Could not reach the inference API."
         )
 
-    body = r.json()
+    try:
+        body = r.json()
+    except Exception:
+        raise HTTPException(status_code=502, detail=r.text)
 
     # Cold-start: model still loading
     if r.status_code == 503 or (isinstance(body, dict) and "estimated_time" in body):
@@ -119,14 +122,17 @@ def translate_multi(req: TranslateRequest, target_lang: str = "hi"):
             status_code=400, detail=f"Unsupported target_lang: '{target_lang}'."
         )
 
-    result = _hf_post(model, {"inputs": req.text})
-    translation = result[0]["translation_text"] if isinstance(result, list) else ""
+    result = query_hf_api(model, {"inputs": req.text})
+    try:
+        translation = result[0].get("translation_text", "") if isinstance(result, list) else ""
+    except Exception:
+        translation = str(result)
     return {"translation": translation}
 
 
 @app.post("/translate/hindi-to-english")
 def translate_hi_en(req: TranslateRequest):
-    result = _hf_post(TRANSLATION_MODELS["hi-en"], {"inputs": req.text})
+    result = query_hf_api(TRANSLATION_MODELS["hi-en"], {"inputs": req.text})
     return {
         "translation": result[0]["translation_text"] if isinstance(result, list) else ""
     }
@@ -134,7 +140,7 @@ def translate_hi_en(req: TranslateRequest):
 
 @app.post("/translate/spanish-to-english")
 def translate_es_en(req: TranslateRequest):
-    result = _hf_post(TRANSLATION_MODELS["es-en"], {"inputs": req.text})
+    result = query_hf_api(TRANSLATION_MODELS["es-en"], {"inputs": req.text})
     return {
         "translation": result[0]["translation_text"] if isinstance(result, list) else ""
     }
@@ -156,7 +162,7 @@ def summarize(req: SummarizeRequest):
             "early_stopping": True,
         },
     }
-    result = _hf_post(SUMM_MODEL, payload)
+    result = query_hf_api(SUMM_MODEL, payload)
     summary = result[0]["summary_text"] if isinstance(result, list) else ""
     ratio = round(len(req.text.split()) / max(len(summary.split()), 1), 2)
     return {"summary": summary, "compression_ratio": ratio}
