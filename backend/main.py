@@ -55,6 +55,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 class TranslateRequest(BaseModel):
     text: str
+    target_lang: str = "hi"
 
 
 class SummarizeRequest(BaseModel):
@@ -122,22 +123,51 @@ def _load_log(filename: str) -> dict:
 # ── Translation endpoints ─────────────────────────────────────────────────────
 
 
-@app.post("/translate/multi")
-def translate_multi(req: TranslateRequest, target_lang: str = "hi"):
-    if target_lang == "hi":
+@app.post("/translate")
+def translate(req: TranslateRequest):
+    """Refined API endpoint matching final documentation."""
+    if req.target_lang == "hi":
         model = TRANSLATION_MODELS["en-hi"]
-    elif target_lang == "es":
+    elif req.target_lang == "es":
         model = TRANSLATION_MODELS["en-es"]
-    elif target_lang == "en":
+    elif req.target_lang == "en":
         model = TRANSLATION_MODELS[_detect_reverse_key(req.text)]
     else:
         raise HTTPException(
-            status_code=400, detail=f"Unsupported target_lang: '{target_lang}'."
+            status_code=400, detail=f"Unsupported target_lang: '{req.target_lang}'."
         )
 
     result = query_hf_api(model, {"inputs": req.text})
     try:
-        translation = result[0].get("translation_text", "") if isinstance(result, list) else ""
+        translation = (
+            result[0].get("translation_text", "") if isinstance(result, list) else ""
+        )
+    except Exception:
+        translation = str(result)
+    return {"translation": translation}
+
+
+@app.post("/translate/multi")
+def translate_multi(req: TranslateRequest, target_lang: str = "hi"):
+    """Compatibility endpoint for React frontend."""
+    # Use target_lang from body if not provided in query param
+    t_lang = target_lang if target_lang != "hi" else req.target_lang
+    if t_lang == "hi":
+        model = TRANSLATION_MODELS["en-hi"]
+    elif t_lang == "es":
+        model = TRANSLATION_MODELS["en-es"]
+    elif t_lang == "en":
+        model = TRANSLATION_MODELS[_detect_reverse_key(req.text)]
+    else:
+        raise HTTPException(
+            status_code=400, detail=f"Unsupported target_lang: '{t_lang}'."
+        )
+
+    result = query_hf_api(model, {"inputs": req.text})
+    try:
+        translation = (
+            result[0].get("translation_text", "") if isinstance(result, list) else ""
+        )
     except Exception:
         translation = str(result)
     return {"translation": translation}
