@@ -97,7 +97,7 @@ def query_hf_api(model_id: str, payload: dict):
 
     if not r.ok:
         raise HTTPException(
-            status_code=r.status_code, detail="Inference API returned an error."
+            status_code=r.status_code, detail=str(body)
         )
 
     return body
@@ -164,19 +164,15 @@ def translate_es_en(req: TranslateRequest):
 
 @app.post("/summarize")
 def summarize(req: SummarizeRequest):
-    payload = {
-        "inputs": req.text,
-        "parameters": {
-            "max_length": 142,
-            "min_length": 56,
-            "length_penalty": 2.0,
-            "num_beams": 4,
-            "no_repeat_ngram_size": 3,
-            "early_stopping": True,
-        },
-    }
+    # Let Hugging Face handle lengths dynamically
+    payload = {"inputs": req.text}
     result = query_hf_api(SUMM_MODEL, payload)
-    summary = result[0]["summary_text"] if isinstance(result, list) else ""
+    
+    try:
+        summary = result[0].get("summary_text", "") if isinstance(result, list) else str(result)
+    except Exception:
+        summary = str(result)
+        
     ratio = round(len(req.text.split()) / max(len(summary.split()), 1), 2)
     return {"summary": summary, "compression_ratio": ratio}
 
