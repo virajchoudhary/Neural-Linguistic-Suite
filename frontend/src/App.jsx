@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import "./App.css";
 
-const API = "http://127.0.0.1:8000";
+const API = "https://neural-suite-api.onrender.com";
 
 const ALL_LANGUAGES = [
   { id: "en", label: "English", flag: "En" },
