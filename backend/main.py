@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-HF_TOKEN = os.getenv("HF_API_KEY", "")
+HF_TOKEN = os.getenv("HF_TOKEN", "")
 HF_BASE = "https://api-inference.huggingface.co/models"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
