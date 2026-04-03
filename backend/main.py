@@ -18,7 +18,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 HF_TOKEN = os.getenv("HF_TOKEN", "")
-HF_BASE = "https://api-inference.huggingface.co/models"
+HF_BASE = "https://router.huggingface.co/hf-inference/models"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 TRANSLATION_MODELS = {
