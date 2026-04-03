@@ -240,8 +240,6 @@ def model_info():
             "decoding_strategy": "Beam Search",
             "beam_size": "4",
             "max_translation_tokens": "512",
-            "max_summary_tokens": "142",
-            "min_summary_tokens": "56",
         },
     }
 

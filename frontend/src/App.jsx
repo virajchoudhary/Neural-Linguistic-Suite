@@ -937,8 +937,7 @@ export default function App() {
         <header className="app-header">
           <h1>Neural Linguistic Suite</h1>
           <p>
-            Multilingual Translation &amp; Abstractive Summarization via
-            Transformer Models
+            Multilingual Translation &amp; Abstractive Summarization
           </p>
         </header>
         {tabs.find((t) => t.id === activeTab).component}

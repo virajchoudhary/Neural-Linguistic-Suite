@@ -1,48 +1,110 @@
 # Neural Linguistic Suite
 
-A full-stack, serverless NLP platform built with React and FastAPI. This project integrates directly with Hugging Face's cloud infrastructure to provide high-speed, multilingual translation and text summarization using state-of-the-art Transformer models.
+A production-ready, cloud-first API for multilingual translation and abstractive text summarization. By routing all inference through the Hugging Face Inference API, the system delivers production-quality results with zero local GPU overhead.
 
-## Architecture
+---
 
-- **Frontend**: React, Vite, TailwindCSS
-- **Backend**: FastAPI, Python
-- **Cloud Inference**: Hugging Face API (Serverless)
-- **Models**:
-  - **Translation**: Helsinki-NLP/opus-mt (English, Spanish, Hindi)
-  - **Summarization**: sshleifer/distilbart-cnn-12-6
+## Theoretical Foundations
+**Transformer Architecture: Core Concepts of Parallel Sequence Modeling**
 
-## Engineering Highlights
+### What is a Transformer?
+A neural network architecture that relies entirely on Self-Attention mechanisms to model global dependencies between tokens. Unlike recurrent models, Transformers process entire sequences in parallel — dramatically increasing throughput and contextual depth.
 
-- **Serverless Integration**: Zero local GPU requirement. Offloads heavy tensor computation to cloud inference endpoints, reducing repository size and local compute overhead.
-- **Cold-Start Handling**: Gracefully catches Hugging Face API timeouts and provides precise, human-readable wait times to the frontend UI.
-- **Auto-Script Detection**: Automatically routes reverse translations (Hindi to English vs. Spanish to English) via Unicode block detection (Devanagari) in the FastAPI backend.
+![Transformer Architecture](assets/transformer_architecture.png)
 
-## Local Setup
+### Self-Attention
+The mechanism that allows every token in a sequence to attend to every other token simultaneously. Attention scores are computed as scaled dot-products of Query, Key, and Value projections, capturing rich linguistic relationships regardless of distance in the sequence.
+
+### Multi-Head Attention
+Rather than computing a single attention function, multiple heads run in parallel across independent representation subspaces. Each head can specialize in different aspects of language — syntax, semantics, coreference — and their outputs are concatenated and projected.
+
+### Positional Encoding
+Since self-attention is permutation-invariant, positional encodings inject sequence-order information into the embeddings. Sinusoidal functions of varying frequency allow the model to generalize to sequence lengths unseen during training.
+
+---
+
+## Implementation Details
+
+### Tokenization Strategy
+*   **Translation (MarianMT):** Utilizes SentencePiece to segment text into subword units, enabling the model to handle rare and out-of-vocabulary words gracefully across English, Hindi, and Spanish.
+*   **Summarization (DistilBART):** Utilizes a Byte-Pair Encoding (BPE) vocabulary of 50,265 tokens.
+
+### Core Architecture Flow
+The backend utilizes an autoregressive Encoder-Decoder processing pipeline with Beam Search to explore multiple sequence probabilities simultaneously, ensuring high-quality output.
+
+```python
+# Autoregressive Decoding Pipeline
+for step in range(max_len):
+    memory = Encoder(source_tokens)
+    logits = Decoder(generated_so_far, memory)
+    
+    # Beam Search optimization
+    candidates = TopK(logits, k=beam_size) 
+    next_token = argmax(score + log_prob)
+    
+    if next_token == EOS: 
+        break
+```
+
+---
+
+## Key Configuration & Updates
+
+> [!IMPORTANT]
+> **Hugging Face API URL Transition**
+> This project initially encountered authentication issues (`500/503 errors`) because the old Hugging Face API URL, `api-inference.huggingface.co`, has been deprecated for router access. The backend was updated to correctly use the new `router.huggingface.co/hf-inference` endpoint, restoring reliable model inference. The API key must also be correctly configured on Render as an environment variable named `HF_TOKEN`.
+
+---
+
+## Installation & Local Setup
 
 ### 1. Clone the repository
-
 ```bash
-git clone https://github.com/virajchoudhary/Neural-Linguistic-Suite.git
-cd Neural-Linguistic-Suite
+git clone https://github.com/your-username/neural-linguistic-suite.git
+cd neural-linguistic-suite
 ```
 
-### 2. Setup the Backend
-
+### 2. Create and activate virtual environment
 ```bash
-cd backend
-# Create a .env file from the example
-cp .env.example .env
-# Note: Add your Hugging Face API key to the .env file
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Mac/Linux
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+```bash
 pip install -r requirements.txt
-uvicorn main:app --reload
 ```
 
-### 3. Setup the Frontend (in a new terminal)
-
+### 4. Create a .env file and add your token (optional for local dev)
 ```bash
-cd frontend
-npm install
-npm run dev
+# create .env
+# echo "HF_TOKEN=hf_your_actual_token_here" > .env
 ```
+
+## Run Locally
+
+### Start the backend server
+```bash
+uvicorn backend.main:app --reload
+```
+
+---
+
+## Production Deployment (Render)
+
+To deploy to Render, you **MUST** configure the environment variable:
+1.  Go to your Render dashboard.
+2.  Open your API service.
+3.  Go to the **Environment** tab.
+4.  Add a new key: `HF_TOKEN`.
+5.  Set its value to your Hugging Face API key (`hf_...`).
+6.  **SAVE CHANGES.**
+
+---
 
 ## Live Demo
+
+https://github.com/user-attachments/assets/9f0a9154-0a2b-4d7c-a2b4-c393a9db3a38
