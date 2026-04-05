@@ -940,7 +940,9 @@ export default function App() {
             Multilingual Translation &amp; Abstractive Summarization
           </p>
         </header>
-        {tabs.find((t) => t.id === activeTab).component}
+        <div className="page-content">
+          {tabs.find((t) => t.id === activeTab).component}
+        </div>
         <Footer />
       </main>
     </div>
